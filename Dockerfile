@@ -1,11 +1,15 @@
 FROM ghcr.io/trypostit/trypost:latest
 
-# 1. Set a dummy APP_KEY so Laravel's config files don't fail during the build
-ENV APP_KEY=base64:dummy_key_for_build_only_do_not_use_in_production=
+# Accept the APP_KEY as a build argument from Railway
+ARG APP_KEY
+# Set it as an environment variable for the build process
+ENV APP_KEY=$APP_KEY
 
-# 2. Prevent auto-discovery of missing dev packages
+# Prevent auto-discovery of missing dev packages
 RUN composer config --no-interaction --json --merge extra.laravel.dont-discover '["laravel/pail"]'
 
-# 3. Regenerate the autoloader. This will now succeed because APP_KEY is set.
+# Regenerate the autoloader. This will now succeed because APP_KEY is set.
 RUN composer dump-autoload
+
+# Clear any stale caches
 RUN php artisan optimize:clear || true
