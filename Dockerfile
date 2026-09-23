@@ -1,15 +1,11 @@
 FROM ghcr.io/trypostit/trypost:latest
 
-# Use composer config to safely add the dont-discover entry
+# 1. Set a dummy APP_KEY so Laravel's config files don't fail during the build
+ENV APP_KEY=base64:dummy_key_for_build_only_do_not_use_in_production=
+
+# 2. Prevent auto-discovery of missing dev packages
 RUN composer config --no-interaction --json --merge extra.laravel.dont-discover '["laravel/pail"]'
 
-# Regenerate the autoloader and let Composer's post-autoload-dump scripts run
-# so Laravel's cached package manifest (bootstrap/cache/packages.php) is
-# rebuilt to honor the dont-discover entry above. Using --no-scripts here
-# would leave the stale manifest in place, still referencing
-# Laravel\Pail\PailServiceProvider even though the package isn't installed.
+# 3. Regenerate the autoloader. This will now succeed because APP_KEY is set.
 RUN composer dump-autoload
-
-# Explicitly regenerate Laravel's package discovery manifest to ensure the
-# dont-discover exclusion takes effect immediately.
-RUN php artisan package:discover --ansi || true
+RUN php artisan optimize:clear || true
