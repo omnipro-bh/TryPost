@@ -5,4 +5,4 @@ RUN composer config --no-interaction --json --merge extra.laravel.dont-discover 
 
 # Regenerate the autoloader and clear any stale caches
 RUN composer dump-autoload --no-scripts
-RUN php artisan optimize:clear || true
+# RUN php artisan optimize:clear || true
